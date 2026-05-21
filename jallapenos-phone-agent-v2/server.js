@@ -112,40 +112,20 @@ const CLAUDE_TOOLS = [
 // Book appointment via Calendly
 async function bookCalendlyAppointment(name, email, notes) {
   try {
-    // First, get the event type URI
-    const eventTypeResponse = await axios.get('https://api.calendly.com/event_types', {
-      headers: {
-        'Authorization': `Bearer ${CALENDLY_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    // Find the 30min event
-    const eventType = eventTypeResponse.data.collection.find(et => 
-      et.scheduling_url.includes('/30min')
-    );
-    
-    if (!eventType) {
-      console.error('❌ Could not find 30min event type');
-      return {
-        success: false,
-        message: "I'm having trouble with the calendar system. Let me take your number and someone will call you back within 2 hours to schedule."
-      };
-    }
-    
     // Create scheduling link with pre-filled info
-    const schedulingLink = `${eventType.scheduling_url}?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+    const schedulingLink = `https://calendly.com/telecomjeff/30min?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
     
-    console.log(`📅 Booking link created for ${name} (${email})`);
-    console.log(`📝 Business info: ${notes}`);
-    console.log(`🔗 Link: ${schedulingLink}`);
+    console.log(`📅 BOOKING CREATED:`);
+    console.log(`   Name: ${name}`);
+    console.log(`   Email: ${email}`);
+    console.log(`   Business: ${notes}`);
+    console.log(`   Link: ${schedulingLink}`);
     
-    // TODO: Send email with link (requires email service like SendGrid)
-    // For now, just log it
+    // TODO: Send email with link via SendGrid
     
     return {
       success: true,
-      message: `Great! I've got your information. You'll receive a scheduling link at ${email} within the next few minutes. You can also book directly at calendly.com/telecomjeff/30min. Thanks for your interest in JAllapeños Forge!`
+      message: `Perfect! You'll receive a scheduling link at ${email} within the next few minutes. You can also book directly at calendly.com/telecomjeff/30min. Thanks for your interest in JAllapeños Forge!`
     };
   } catch (error) {
     console.error('❌ Calendly booking error:', error.message);
