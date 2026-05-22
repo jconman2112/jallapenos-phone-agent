@@ -34,7 +34,7 @@ CONVERSATION STYLE:
 - Conversational, not robotic
 
 GREETING:
-Simply say: "Thanks for calling JAllapeños, we add spice to your workflow. How can I help you today?"
+Simply say: "Thanks for calling JAllapeños — we add spice to your workflow. How can I help you today?"
 DO NOT mention new vs existing customer options - let them tell you why they're calling.
 
 QUALIFICATION FLOW (if they want efficiency help):
@@ -50,7 +50,7 @@ Ask these questions ONE AT A TIME:
 7. Use book_appointment tool with confirmed info
 
 AFTER BOOKING IS COMPLETE:
-Say ONLY: "Perfect! Your scheduling link will arrive in your email shortly. Thanks for calling JAllapeños, we put spice in your workflow!"
+Say ONLY: "Perfect! Your scheduling link will arrive in your email. Thanks for calling JAllapeños!"
 Then STOP. The call is DONE.
 DO NOT say "Is there anything else"
 DO NOT say "Have a great day" 
@@ -59,9 +59,11 @@ The conversation ENDS after you confirm the link will be sent.
 
 EXISTING CUSTOMERS:
 If they mention they're already a customer or used your service before:
+- Say: "At the moment everyone is with a client, but if you give me your contact info someone will reach out to you within the next 10 minutes."
 - Get their name
-- Say: "At the moment everyone is with a client, but if you give me your contact info someone will reach out to you within the next 10 minutes." 
-- Use transfer_to_human tool
+- Get their phone number
+- Confirm you have their information
+- Thank them for calling
 
 IMPORTANT:
 - Never ask multiple questions in one response
@@ -125,13 +127,13 @@ async function bookCalendlyAppointment(name, email, notes) {
 
         return {
             success: true,
-            message: `Perfect! You'll receive a scheduling link in your email shortly.  Thanks for your interest in JAllapeños, we add spice yo your workflow!`
+            message: `Perfect! You'll receive a scheduling link at ${email} within the next few minutes. You can also book directly at calendly.com/telecomjeff/30min. Thanks for your interest in JAllapeños!`
         };
     } catch (error) {
         console.error('❌ Calendly booking error:', error.message);
         return {
             success: false,
-            message: "I've captured your information. Someone from our team will reach out to you within 2 busines hours to schedule your consultation. Thanks for your patience!"
+            message: "I've captured your information. Someone from our team will reach out within 2 hours to schedule your consultation. Thanks for your patience!"
         };
     }
 }
@@ -381,23 +383,23 @@ wss.on('connection', (ws) => {
     // Convert text to speech and stream to Twilio
     const speakResponse = async (text, ws, streamSid) => {
         try {
-            // Split into sentences and add pauses
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+            // Split into phrases (by periods, commas, questions, exclamations)
+            const phrases = text.match(/[^.!?,]+[.!?,]+/g) || [text];
 
             currentlySpeakingToTwilio = true;
 
-            for (let i = 0; i < sentences.length; i++) {
+            for (let i = 0; i < phrases.length; i++) {
                 // Check if we've been interrupted
                 if (!currentlySpeakingToTwilio) {
                     console.log('🛑 TTS interrupted, stopping');
                     break;
                 }
 
-                const sentence = sentences[i].trim();
+                const phrase = phrases[i].trim();
 
                 // Use Deepgram TTS
                 const response = await deepgram.speak.request(
-                    { text: sentence },
+                    { text: phrase },
                     {
                         model: 'aura-asteria-en',
                         encoding: 'mulaw',
@@ -427,9 +429,11 @@ wss.on('connection', (ws) => {
                     ws.send(JSON.stringify(payload));
                 }
 
-                // Add a natural pause between sentences (300ms)
-                if (i < sentences.length - 1 && currentlySpeakingToTwilio) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                // Add natural pause after each phrase
+                // Longer pause for sentences (.), shorter for commas
+                if (i < phrases.length - 1 && currentlySpeakingToTwilio) {
+                    const pauseDuration = phrase.trim().endsWith(',') ? 400 : 300;
+                    await new Promise(resolve => setTimeout(resolve, pauseDuration));
                 }
             }
 
@@ -466,7 +470,7 @@ wss.on('connection', (ws) => {
 
                     // Send initial greeting
                     setTimeout(async () => {
-                        const greeting = "Thanks for calling JAllapeños, we add spice to your workflow How can I help you today?";
+                        const greeting = "Thanks for calling JAllapeños — we add spice to your workflow. How can I help you today?";
                         conversationHistory.push({
                             role: 'assistant',
                             content: greeting
