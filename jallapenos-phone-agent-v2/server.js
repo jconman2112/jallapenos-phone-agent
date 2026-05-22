@@ -60,7 +60,7 @@ The conversation ENDS after you confirm the link will be sent.
 EXISTING CUSTOMERS:
 If they mention they're already a customer or used your service before:
 - Get their name
-- Say: "Let me connect you with the team" 
+- Say: "At the moment everyone is with a client, but if you give me your contact info someone will reach out to you within the next 10 minutes." 
 - Use transfer_to_human tool
 
 IMPORTANT:
@@ -125,7 +125,7 @@ async function bookCalendlyAppointment(name, email, notes) {
 
         return {
             success: true,
-            message: `Perfect! You'll receive a scheduling link at ${email} within the next few minutes. You can also book directly at calendly.com/telecomjeff/30min. Thanks for your interest in JAllapeños Forge!`
+            message: `Perfect! You'll receive a scheduling link in your email shortly.  Thanks for your interest in JAllapeños, we add spice yo your workflow!`
         };
     } catch (error) {
         console.error('❌ Calendly booking error:', error.message);
@@ -466,7 +466,7 @@ wss.on('connection', (ws) => {
 
                     // Send initial greeting
                     setTimeout(async () => {
-                        const greeting = "Thanks for calling JAllapeños Forge. How can I help you today?";
+                        const greeting = "Thanks for calling JAllapeños, we add spice to your workflow How can I help you today?";
                         conversationHistory.push({
                             role: 'assistant',
                             content: greeting
